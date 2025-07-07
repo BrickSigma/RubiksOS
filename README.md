@@ -2,6 +2,7 @@
 This is a simple bootloader/OS project, with the goal of hopefully running a few simple games as a baremetal operating system.
 
 ## Contents
+- [Building and running](#building-and-running)
 - [Why do this?](#why-do-this)
 - [The current goal of this project](#the-current-goal-of-this-project)
 - [Resources and references](#resources-and-references)
@@ -36,6 +37,8 @@ One of the most important parts about OS Dev is finding the right resources and 
 
 - [Babysteps Guide](https://wiki.osdev.org/Babystep1) - this is the starting point for the project, it contains a step by step guide for understanding the basics of a bootloader and building one.
 - [IBM's VGA Documentation](https://ardent-tool.com/docs/pdf/ibm_vgaxga_trm2.pdf) - to help understand VGA graphics a bit better while devloping the graphics driver.
+- [Intel 8086 ISA](https://www.eng.auburn.edu/~sylee/ee2220/8086_instruction_set.html) - Full instruction set for the Intel 8086 assembly language.
+- [BIOS Interrupts and Functions](https://ostad.nit.ac.ir/payaidea/ospic/file1615.pdf) - a useful PDF listing several BIOS interrupts and functions that can be used in real mode for setup.
 
 ## Further ideas
 It's never a bad idea to dream ahead and think bigger, so while working on my current goal of a simple bootloader game, here are some other ideas I might look into trying:
