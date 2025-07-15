@@ -1,25 +1,33 @@
 AS := as
 LD := ld
 
-SRC := src
+SRCDIR := src
+OBJDIR := objects
 
-LDFILE := $(SRC)/linker.ld
+SRCS =  $(SRCDIR)/boot.s #$(wildcard $(SRCDIR)/*.s)
+OBJS = $(patsubst $(SRCDIR)/%.s, $(OBJDIR)/%.o, $(SRCS))
 
-BOOT := $(SRC)/boot
+LDFLAGS := -T src/linker.ld
+
+ASFLAGS := -I$(SRCDIR)
+
 BOOTBIN := chippyos.bin
 
 .PHONY: all clean run
 
 all : $(BOOTBIN)
 
-$(BOOTBIN) : $(BOOT).o
-	$(LD) -T $(LDFILE) -o $@ $^
+$(BOOTBIN) : $(OBJS)
+	$(LD) $(LDFLAGS) -o $@ $^
 
-$(BOOT).o : $(BOOT).s
-	$(AS) $^ -o $@
+$(OBJDIR)/%.o : $(SRCDIR)/%.s | $(OBJDIR)
+	$(AS) $^ -o $@ $(ASFLAGS)
+
+$(OBJDIR) :
+	mkdir -p $(OBJDIR)
 
 clean:
-	rm -rf */*.o *.bin
+	rm -rf $(OBJS) *.bin
 
 run:
 	qemu-system-i386 -hda $(BOOTBIN)
