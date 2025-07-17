@@ -15,7 +15,8 @@ sprint_loop:
     addb $1, ypos  # Move to the next line in video memory
     cmpb $25, ypos
     jb sprint_end  # Check if ypos >= 25
-    movb $0, ypos  # Set ypos to 0 if it is >= 25
+    movb $24, ypos  # Set ypos to 24 and scroll the screen
+    call scroll_screen
 sprint_end:
     movb $0, xpos  # Move left
 
@@ -45,16 +46,35 @@ cprint:
     addb $1, ypos  # Move to the next line in video memory
     cmpb $25, ypos
     jb cprint_end  # Check if ypos >= 25
-    movb $0, ypos  # Set ypos to 0 if it is >= 25
+    movb $24, ypos  # Set ypos to 24 and scroll the screen
+    call scroll_screen
 cprint_end:
+    ret
+
+
+# Used to scroll the screen one line up on new lines
+# Should only be called in sprint/cprint
+scroll_screen:
+    push %ds  # Save DS
+    push %si  # Save SI (no need to save DI since cprint always overwrites it again)
+
+    movw $0xb800, %ax
+    movw %ax, %ds
+
+    movw $160, %si  # One row bellow video memory
+    movw $0, %di
+
+    movw $1920, %cx  # Loop 80x24 times for each character, expect the last row
+scroll_screen_loop:
+    movsw
+    loop scroll_screen_loop
+
+    pop %si  # Restore SI
+    pop %ds  # Restore DS
     ret
 
 .global printreg16
 printreg16:
-    push %es # Save the old value of ES onto the stack
-    movw %ds, %ax
-    movw %ax, %es  # Copy DS into ES
-
     movw $outstr16, %di  # Load the pointer for the output string
     movw reg16, %ax  # Copy the value of reg16 into AX
     movw $hexstr, %si  # Load the pointer of hexstr
@@ -63,12 +83,11 @@ hexloop:
     rol $4, %ax  # Get the leftmost bits (5E2F --> E2F5)
     movw %ax, %bx
     andw $0x0f, %bx  # Get only the last 4 bits/the last hex value (E2F5 --> 0005)
-    movb (%bx,%si), %al  # Index into hexstr and store the character in AL
-    stosb  # Write the string value into outreg16
+    movb (%bx,%si), %bl  # Index into hexstr and store the character in AL
+    movb %bl, (%di)
+    inc %di
     decw %cx
     jnz hexloop
-
-    pop %es  # Restore the old ES value
 
     movw $outstr16, %si
     call sprint
