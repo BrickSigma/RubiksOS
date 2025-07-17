@@ -12,14 +12,27 @@ _start:
 
     cld
 
+    # Set up the IVT for keyboard interrupts
+    cli
+    mov $0x09, %bx  # Hardware interrupt no#
+    shlw $2, %bx  # Multiply by 4 (4 bytes per entry in the IVT)
+    xor %ax, %ax
+    movw %ax, %gs
+    movw $keyhandler, %gs:(%bx)
+    movw %ds, %gs:2(%bx)  # Segment location of ISR
+    sti
+
+    # Disable the cursor blinking
+    movb $0x01, %ah
+    movb $1, %ch
+    movb $0, %cl
+    int $0x10
+
     # Setup the video memory pointer in ES
     movw $0xb800, %ax
     movw %ax, %es
 
     movw $msg, %si  # Move the address of the message into the src index register
-    call sprint
-
-    movw $msg2, %si
     call sprint
 
     movw $0x5e2f, reg16
@@ -29,10 +42,10 @@ hang:
     jmp hang
 
 .include "print.s"
+.include "keyboard.s"
 
 # Data section
 msg: .ascii "Hello World!\x0"
-msg2: .ascii "This is being printed without BIOS interrupts! I also have a lot more text added to see if it'll wrap around the screen, let's see if it does it!!!\x0"
 
     # Padding the end of the bootloader
     .fill 510 - (. - _start)
