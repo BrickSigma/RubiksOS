@@ -24,8 +24,8 @@ I've never done any form of operating system development before, so this'll be a
 ## The current goal of this project
 Like the OSDev wiki mentions, it's always good to have an end goal with such a large project, but to be honest I don't have an actual end goal (as of yet). The *current goal* however is to get the following working:
 
-- [ ] Interrupt handler for keyboard input,
-- [ ] Graphics driver for supporting VGA 16-color graphics with a resolution of 320x200,
+- [x] Interrupt handler for keyboard input,
+- [ ] Graphics driver for supporting VGA 16-color graphics with a resolution of ~~320x200~~ 80x25,
 - [ ] A basic game running, like Pong. 
 
 The last section of the goal is to get a simple game working, which will require the previous two tasks to work. Pong is a nice and simple game, and it can definitely fit into a bootsector (512 bytes).
