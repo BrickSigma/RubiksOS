@@ -24,20 +24,11 @@ sprint_end:
     ret
 
 cprint:
-    movb $0x0f, %ah  # Color attribute, for white on black
-    movw %ax, %cx  # Save char/attribute
-    movzxb ypos, %ax  # Load the ypos into AX
-    movw $160, %dx 
-    mulw %dx
-    movzxb xpos, %bx
-    shlw $1, %bx
+    movb $0x0f, %ah
+    movb xpos, %bl
+    movb ypos, %bh
+    call print_char_at
 
-    movw $0, %di
-    addw %ax, %di  # Add the y offest
-    addw %bx, %di  # Add the x offset
-
-    movw %cx, %ax
-    stosw
     addb $1, xpos
     cmpb $80, xpos
     jb cprint_end
@@ -69,6 +60,13 @@ scroll_screen_loop:
     movsw
     loop scroll_screen_loop
 
+    # Clear the last line of the buffer as well
+    movw $0, %ax
+    movw $80, %cx
+clear_last_line:
+    stosw
+    loop clear_last_line
+
     pop %si  # Restore SI
     pop %ds  # Restore DS
     ret
@@ -91,6 +89,35 @@ hexloop:
 
     movw $outstr16, %si
     call sprint
+
+    ret
+
+/*
+print_char_at - used to print a ascii character onto the screen at a specified location
+
+INPUTS: (doesn't follow any calling convention)
+AH = color attribute
+AL = char to print
+BH = y position to print to (between 0-25)
+BL = x position to print to (between 0-79)
+
+Doesn't preserve register AX, BX, CX, DX, and DI
+*/
+.global print_char_at
+print_char_at:
+    movw %ax, %cx  # Save char/attribute
+    movzxb %bh, %ax  # Load the y position into AX
+    movw $160, %dx 
+    mulw %dx
+    movzxb %bl, %bx  # Load the x position int BX
+    shlw $1, %bx
+
+    movw $0, %di
+    addw %ax, %di  # Add the y offest
+    addw %bx, %di  # Add the x offset
+
+    movw %cx, %ax
+    stosw  # Write the byte to ES:(DI)
 
     ret
 
