@@ -4,7 +4,9 @@
 .section .text
 .global sprint
 sprint:
-    push %cx  # save CX
+    # Save registers
+    pusha
+
     jmp sprint_loop
 dochar:
     call cprint  # Print one character
@@ -20,10 +22,13 @@ sprint_loop:
 sprint_end:
     movb $0, xpos  # Move left
 
-    pop %cx  # Restore CX
+    # Restore registers
+    popa
     ret
 
 cprint:
+    pusha
+
     movb $0x0f, %ah
     movb xpos, %bl
     movb ypos, %bh
@@ -39,15 +44,17 @@ cprint:
     jb cprint_end  # Check if ypos >= 25
     movb $24, ypos  # Set ypos to 24 and scroll the screen
     call scroll_screen
+
 cprint_end:
+    popa
     ret
 
 
 # Used to scroll the screen one line up on new lines
 # Should only be called in sprint/cprint
 scroll_screen:
-    push %ds  # Save DS
-    push %si  # Save SI (no need to save DI since cprint always overwrites it again)
+    pusha
+    push %ds
 
     movw $0xb800, %ax
     movw %ax, %ds
@@ -67,12 +74,15 @@ clear_last_line:
     stosw
     loop clear_last_line
 
-    pop %si  # Restore SI
-    pop %ds  # Restore DS
+    pop %ds
+    popa
     ret
 
 .global printreg16
 printreg16:
+    # Save register values
+    pusha
+
     movw $outstr16, %di  # Load the pointer for the output string
     movw reg16, %ax  # Copy the value of reg16 into AX
     movw $hexstr, %si  # Load the pointer of hexstr
@@ -90,6 +100,9 @@ hexloop:
     movw $outstr16, %si
     call sprint
 
+    # Restore register values
+    popa
+
     ret
 
 /*
@@ -105,6 +118,9 @@ Doesn't preserve register AX, BX, CX, DX, and DI
 */
 .global print_char_at
 print_char_at:
+    # Save registers
+    pusha
+
     movw %ax, %cx  # Save char/attribute
     movzxb %bh, %ax  # Load the y position into AX
     movw $160, %dx 
@@ -118,6 +134,9 @@ print_char_at:
 
     movw %cx, %ax
     stosw  # Write the byte to ES:(DI)
+
+    # Restore the registers
+    popa
 
     ret
 

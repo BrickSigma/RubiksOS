@@ -35,9 +35,6 @@ _start:
     movw $msg, %si  # Move the address of the message into the src index register
     call sprint
 
-    movw $0x5e2f, reg16
-    call printreg16
-
 hang:
     jmp hang
 
