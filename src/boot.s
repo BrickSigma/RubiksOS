@@ -59,12 +59,15 @@ _start:
     movb $0, %cl  # Background color
     movb $0, %ch  # Frame counter
 game_loop:
-    # Run at 1FPS
+    # Run at 15 frames per second
     incb %ch
-    cmpb $60, %ch
+    cmpb $4, %ch
     jb continue_loop
 
     movb $0, %ch
+
+    # Handle main logic over here
+    call move_players  # Handle player movement
 
 continue_loop:
 
@@ -100,7 +103,7 @@ vsync_exit_wait:  # Wait for the screen to exit vsync and render the screen
 .include "keyboard.s"
 .include "player.s"
 
-.ascii "Hello"
+.ascii "Hello"  # Used as a marker to determine how much memory in the bootloader binary is remaining
     # Padding the end of the bootloader
     .fill 510 - (. - _start)
     .byte 0x55
