@@ -1,3 +1,7 @@
+/*
+Marked as old for now since it'll be unused
+*/
+
 .code16
 .align 16
 
@@ -114,7 +118,6 @@ AL = char to print
 BH = y position to print to (between 0-25)
 BL = x position to print to (between 0-79)
 
-Doesn't preserve register AX, BX, CX, DX, and DI
 */
 .global print_char_at
 print_char_at:

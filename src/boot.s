@@ -32,17 +32,41 @@ _start:
     movw $0xb800, %ax
     movw %ax, %es
 
-    movw $msg, %si  # Move the address of the message into the src index register
-    call sprint
+    movb $0, %cl
+    movb $0, %ch
+game_loop:
+    # Run at 1FPS
+    incb %ch
+    cmpb $60, %ch
+    jb continue_loop
 
-hang:
-    jmp hang
+    movb $0, %ch
 
-.include "print.s"
+    addb $0x10, %cl
+
+continue_loop:
+    # VSYNC
+    movw $0x3da, %dx
+vsync_enter_wait:  # Wait for the screen to enter vsync
+    inb %dx, %al
+    andb $0x08, %al;
+    jz vsync_enter_wait
+
+    # Rendering code placed here
+    movb %cl, %ah
+    movb $0, %al
+    call clear_screen
+    # ============================
+
+vsync_exit_wait:  # Wait for the screen to exit vsync and render the screen
+    inb %dx, %al
+    andb $0x08, %al;
+    jnz vsync_exit_wait
+
+    jmp game_loop
+
+.include "vga_driver.s"
 .include "keyboard.s"
-
-# Data section
-msg: .ascii "Hello World!\x0"
 
     # Padding the end of the bootloader
     .fill 510 - (. - _start)
