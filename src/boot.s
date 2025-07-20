@@ -63,11 +63,11 @@ _start:
     # Main game loop code
     movb $0, %cl  # Background color
     movb $0, %ch  # Frame counter
-game_loop:
+.game_loop:
     # Run at 15 frames per second
     incb %ch
     cmpb $4, %ch
-    jb continue_loop
+    jb .continue_loop
 
     movb $0, %ch
 
@@ -87,10 +87,10 @@ game_loop:
     movb player2_ypos, %bh
     call draw_player
 
-continue_loop:
+.continue_loop:
     call wait_for_tick
 
-    jmp game_loop
+    jmp .game_loop
 
 .include "vga_driver.s"
 .include "keyboard.s"

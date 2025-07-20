@@ -27,47 +27,47 @@ move_players:
 
     # Handle player 1 movement (W/S keys)
     testb $0b00000100, %al  # Test if W key is down
-    jnz player_1_up
+    jnz .player_1_up
     testb $0b00001000, %al  # Test if S key is down
-    jnz player_1_down
-    jmp move_player_1_done
+    jnz .player_1_down
+    jmp .move_player_1_done
 
-player_1_up:
+.player_1_up:
     decb %bl
     cmpb $0, %bl
-    jge move_player_1_done
+    jge .move_player_1_done
     movb $0, %bl  # If player 1 goes beyond the screen, reset it's position
-    jmp move_player_1_done
-player_1_down:
+    jmp .move_player_1_done
+.player_1_down:
     incb %bl
     cmpb $20, %bl
-    jle move_player_1_done
+    jle .move_player_1_done
     movb $20, %bl  # If player 1 goes beyond the screen, reset it's position
-    jmp move_player_1_done
+    jmp .move_player_1_done
 
-move_player_1_done:
+.move_player_1_done:
 
     # Handle player 2 movement (up/down keys)
     testb $0b00000001, %al  # Test if UP key is down
-    jnz player_2_up
+    jnz .player_2_up
     testb $0b00000010, %al  # Test if DOWN key is down
-    jnz player_2_down
-    jmp move_player_2_done
+    jnz .player_2_down
+    jmp .move_player_2_done
 
-player_2_up:
+.player_2_up:
     decb %bh
     cmpb $0, %bh
-    jge move_player_2_done
+    jge .move_player_2_done
     movb $0, %bh  # If player 2 goes beyond the screen, reset it's position
-    jmp move_player_2_done
-player_2_down:
+    jmp .move_player_2_done
+.player_2_down:
     incb %bh
     cmpb $20, %bh
-    jle move_player_2_done
+    jle .move_player_2_done
     movb $20, %bh  # If player 2 goes beyond the screen, reset it's position
-    jmp move_player_2_done
+    jmp .move_player_2_done
 
-move_player_2_done:
+.move_player_2_done:
 
     # Save the new player positions
     movb %bl, player1_ypos
@@ -88,18 +88,18 @@ draw_player:
     movw $0x0fdb, %ax  # White on black, solid character
     
     movb $player_height, %ch
-height_loop:
+.height_loop:
     movb $player_width, %cl
-width_loop:
+.width_loop:
     call print_char_at  # Print the character
     incb %bl
     decb %cl
-    jnz width_loop
+    jnz .width_loop
 
     movb %dl, %bl
     incb %bh
     decb %ch
-    jnz height_loop
+    jnz .height_loop
 
     popa
     ret
