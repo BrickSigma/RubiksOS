@@ -28,6 +28,30 @@ _start:
     movb $0, %cl
     int $0x10
 
+    # Disable text mode blink
+    movw $0x3da, %dx
+    inb %dx, %al  # Reset the latch
+
+    movb $0x30, %al
+    movw $0x3c0, %dx
+    outb %al, %dx  # Set the register index for port 0x3C0
+
+    movw $0x3c1, %dx
+    inb %dx, %al  # Read the port's data
+    andb $0xf7, %al  # Disable blinking
+    movb %al, %bl # Save the value
+
+    movw $0x3da, %dx
+    inb %dx, %al  # Reset the latch
+
+    movb $0x30, %al
+    movw $0x3c0, %dx
+    outb %al, %dx  # Set the register index for port 0x3C0
+
+    movb %bl, %al
+    movw $0x3c0, %dx
+    outb %al, %dx
+
     # Setup the video memory pointer in ES
     movw $0xb800, %ax
     movw %ax, %es
