@@ -56,8 +56,8 @@ _start:
     movw $0xb800, %ax
     movw %ax, %es
 
-    movb $0, %cl
-    movb $0, %ch
+    movb $0, %cl  # Background color
+    movb $0, %ch  # Frame counter
 game_loop:
     # Run at 1FPS
     incb %ch
@@ -66,9 +66,8 @@ game_loop:
 
     movb $0, %ch
 
-    addb $0x10, %cl
-
 continue_loop:
+
     # VSYNC
     movw $0x3da, %dx
 vsync_enter_wait:  # Wait for the screen to enter vsync
@@ -80,6 +79,14 @@ vsync_enter_wait:  # Wait for the screen to enter vsync
     movb %cl, %ah
     movb $0, %al
     call clear_screen
+
+    movb player1_xpos, %bl
+    movb player1_ypos, %bh
+    call draw_player
+
+    movb player2_xpos, %bl
+    movb player2_ypos, %bh
+    call draw_player
     # ============================
 
 vsync_exit_wait:  # Wait for the screen to exit vsync and render the screen
@@ -91,7 +98,9 @@ vsync_exit_wait:  # Wait for the screen to exit vsync and render the screen
 
 .include "vga_driver.s"
 .include "keyboard.s"
+.include "player.s"
 
+.ascii "Hello"
     # Padding the end of the bootloader
     .fill 510 - (. - _start)
     .byte 0x55
