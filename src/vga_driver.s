@@ -22,8 +22,7 @@ print_char_at:
     movzxb %bl, %bx  # Load the x position int BX
     shlw $1, %bx
 
-    movw $0, %di
-    addw %ax, %di  # Add the y offest
+    movw %ax, %di  # Add the y offest
     addw %bx, %di  # Add the x offset
 
     movw %cx, %ax

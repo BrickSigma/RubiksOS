@@ -2,7 +2,6 @@
 Code related to player drawing
 */
 .code16
-.align 16
 
 player1_xpos: .byte 2
 player1_ypos: .byte 10

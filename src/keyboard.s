@@ -1,7 +1,5 @@
 .code16
-.align 16
 
-.section .text
 .global keyhandler
 keyhandler:
     pusha

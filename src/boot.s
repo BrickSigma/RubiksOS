@@ -8,6 +8,7 @@ _start:
     xor %ax, %ax
     movw %ax, %ds  # DS = 0
     movw %ax, %ss  # Stack starts at 0
+    movw %ax, %gs  # GS = 0 (used for setting the IVT)
     movw $0x9c00, %sp  # Stack pointer starts 2000h 
 
     cld
@@ -17,16 +18,12 @@ _start:
     cli
 
     # Set up for PIT interrupts
-    mov $0x08, %bx  # Hardware interrupt no#
-    shlw $2, %bx  # Multiply by 4 (4 bytes per entry in the IVT)
-    xor %ax, %ax
-    movw %ax, %gs
+    mov $0x20, %bx  # Hardware interrupt no# x 4 (int 8)
     movw $pit_handler, %gs:(%bx)
     movw %ds, %gs:2(%bx)  # Segment location of ISR
 
     # Set up for keyboard interrupts
-    mov $0x09, %bx  # Hardware interrupt no#
-    shlw $2, %bx  # Multiply by 4 (4 bytes per entry in the IVT)
+    mov $0x24, %bx  # Hardware interrupt no# x 4 (int 9)
     movw $keyhandler, %gs:(%bx)
     movw %ds, %gs:2(%bx)  # Segment location of ISR
 
@@ -40,7 +37,7 @@ _start:
     movb $0x34, %al
     outb %al, $0x43
 
-    movw $19886, %ax  # 1193182 / 60Hz = 19886
+    movw $59659, %ax  # 1193182 / 20Hz = 59659
     outb %al, $0x40
     movb %ah, %al
     outb %al, $0x40
@@ -49,10 +46,10 @@ _start:
 
     # =============================================================
     # Disable the cursor blinking
-    movb $0x01, %ah
-    movb $1, %ch
-    movb $0, %cl
-    int $0x10
+    // movb $0x01, %ah
+    // movb $1, %ch
+    // movb $0, %cl
+    // int $0x10
     # =============================================================
 
     # Setup the video memory pointer in ES
@@ -61,22 +58,12 @@ _start:
 
     # =============================================================
     # Main game loop code
-    movb $0, %cl  # Background color
-    movb $0, %ch  # Frame counter
 .game_loop:
-    # Run at 15 frames per second
-    incb %ch
-    cmpb $4, %ch
-    jb .continue_loop
-
-    movb $0, %ch
-
     # Handle main logic over here
     call move_players  # Handle player movement
 
     # Rendering code placed here
-    movb %cl, %ah
-    movb $0, %al
+    movw $0, %ax
     call clear_screen
 
     movb player1_xpos, %bl
@@ -87,7 +74,6 @@ _start:
     movb player2_ypos, %bh
     call draw_player
 
-.continue_loop:
     call wait_for_tick
 
     jmp .game_loop
@@ -97,7 +83,7 @@ _start:
 .include "pit_handler.s"
 .include "player.s"
 
-.ascii "Hello"  # Used as a marker to determine how much memory in the bootloader binary is remaining
+.ascii "Yo"  # Used as a marker to determine how much memory in the bootloader binary is remaining
     # Padding the end of the bootloader
     .fill 510 - (. - _start)
     .byte 0x55

@@ -2,7 +2,6 @@
 Programmable Interface Timer (PIT) interrupt handler code
 */
 .code16
-.align 16
 
 # Tick counter used for tracking frames
 tick_count: .word 0
