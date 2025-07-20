@@ -1,5 +1,6 @@
 /*
-Marked as old for now since it'll be unused
+Marked as old for now.
+Will probably re-implement it in C once in protected mode.
 */
 
 .code16

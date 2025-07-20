@@ -7,7 +7,7 @@ OBJDIR := objects
 SRCS =  $(SRCDIR)/boot.s #$(wildcard $(SRCDIR)/*.s)
 OBJS = $(patsubst $(SRCDIR)/%.s, $(OBJDIR)/%.o, $(SRCS))
 
-LDFLAGS := -T src/linker.ld
+LDFLAGS := -T linker.ld
 
 ASFLAGS := -I$(SRCDIR)
 
