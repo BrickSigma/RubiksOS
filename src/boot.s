@@ -12,50 +12,55 @@ _start:
 
     cld
 
-    # Set up the IVT for keyboard interrupts
+    # =============================================================
+    # Setup the IVT
     cli
-    mov $0x09, %bx  # Hardware interrupt no#
+
+    # Set up for PIT interrupts
+    mov $0x08, %bx  # Hardware interrupt no#
     shlw $2, %bx  # Multiply by 4 (4 bytes per entry in the IVT)
     xor %ax, %ax
     movw %ax, %gs
+    movw $pit_handler, %gs:(%bx)
+    movw %ds, %gs:2(%bx)  # Segment location of ISR
+
+    # Set up for keyboard interrupts
+    mov $0x09, %bx  # Hardware interrupt no#
+    shlw $2, %bx  # Multiply by 4 (4 bytes per entry in the IVT)
     movw $keyhandler, %gs:(%bx)
     movw %ds, %gs:2(%bx)  # Segment location of ISR
-    sti
 
+    sti
+    # Done setting up the IVT
+    # =============================================================
+
+    # =============================================================
+    # Initialize the PIT to run at 60Hz on channel 0, using mode 2
+    # Also set to lowbyte/hibyte
+    movb $0x34, %al
+    outb %al, $0x43
+
+    movw $19886, %ax  # 1193182 / 60Hz = 19886
+    outb %al, $0x40
+    movb %ah, %al
+    outb %al, $0x40
+    # =============================================================
+
+
+    # =============================================================
     # Disable the cursor blinking
     movb $0x01, %ah
     movb $1, %ch
     movb $0, %cl
     int $0x10
-
-    # Disable text mode blink
-    movw $0x3da, %dx
-    inb %dx, %al  # Reset the latch
-
-    movb $0x30, %al
-    movw $0x3c0, %dx
-    outb %al, %dx  # Set the register index for port 0x3C0
-
-    movw $0x3c1, %dx
-    inb %dx, %al  # Read the port's data
-    andb $0xf7, %al  # Disable blinking
-    movb %al, %bl # Save the value
-
-    movw $0x3da, %dx
-    inb %dx, %al  # Reset the latch
-
-    movb $0x30, %al
-    movw $0x3c0, %dx
-    outb %al, %dx  # Set the register index for port 0x3C0
-
-    movb %bl, %al
-    movw $0x3c0, %dx
-    outb %al, %dx
+    # =============================================================
 
     # Setup the video memory pointer in ES
     movw $0xb800, %ax
     movw %ax, %es
 
+    # =============================================================
+    # Main game loop code
     movb $0, %cl  # Background color
     movb $0, %ch  # Frame counter
 game_loop:
@@ -69,15 +74,6 @@ game_loop:
     # Handle main logic over here
     call move_players  # Handle player movement
 
-continue_loop:
-
-    # VSYNC
-    movw $0x3da, %dx
-vsync_enter_wait:  # Wait for the screen to enter vsync
-    inb %dx, %al
-    andb $0x08, %al;
-    jz vsync_enter_wait
-
     # Rendering code placed here
     movb %cl, %ah
     movb $0, %al
@@ -90,17 +86,15 @@ vsync_enter_wait:  # Wait for the screen to enter vsync
     movb player2_xpos, %bl
     movb player2_ypos, %bh
     call draw_player
-    # ============================
 
-vsync_exit_wait:  # Wait for the screen to exit vsync and render the screen
-    inb %dx, %al
-    andb $0x08, %al;
-    jnz vsync_exit_wait
+continue_loop:
+    call wait_for_tick
 
     jmp game_loop
 
 .include "vga_driver.s"
 .include "keyboard.s"
+.include "pit_handler.s"
 .include "player.s"
 
 .ascii "Hello"  # Used as a marker to determine how much memory in the bootloader binary is remaining
