@@ -1,4 +1,4 @@
-# ChippyOS
+# RubiksOS
 This is a simple bootloader/OS project, with the goal of hopefully running a few simple games as a baremetal operating system.
 
 ## Contents
