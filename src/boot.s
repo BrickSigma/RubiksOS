@@ -58,9 +58,16 @@ _start:
 
     # =============================================================
     # Main game loop code
+    movb $0, %cl
 .game_loop:
     # Handle main logic over here
     call move_players  # Handle player movement
+
+    andb $1, %cl
+    jz .skip_frame
+    call move_ball
+.skip_frame:
+    addb $1, %cl
 
     # Rendering code placed here
     movw $0, %ax
@@ -74,6 +81,8 @@ _start:
     movb player2_ypos, %bh
     call draw_player
 
+    call draw_ball
+
     call wait_for_tick
 
     jmp .game_loop
@@ -82,6 +91,7 @@ _start:
 .include "keyboard.s"
 .include "pit_handler.s"
 .include "player.s"
+.include "ball.s"
 
 .ascii "Yo"  # Used as a marker to determine how much memory in the bootloader binary is remaining
     # Padding the end of the bootloader
