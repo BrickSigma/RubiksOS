@@ -8,7 +8,6 @@ _start:
     xor %ax, %ax
     movw %ax, %ds  # DS = 0
     movw %ax, %ss  # Stack starts at 0
-    movw %ax, %gs  # GS = 0 (used for setting the IVT)
     movw $0x9c00, %sp  # Stack pointer starts 2000h 
 
     cld
@@ -17,22 +16,22 @@ _start:
     # Setup the IVT
     cli
 
-    # Set up for PIT interrupts
+    # Set up for PIT interrupts, address 0x20 in memory
     mov $0x20, %bx  # Hardware interrupt no# x 4 (int 8)
-    movw $pit_handler, %gs:(%bx)
-    movw %ds, %gs:2(%bx)  # Segment location of ISR
+    movw $pit_handler, (%bx)  # No need to specify the segment offset as it will use DS (which is set to 0)
+    movw %ds, 2(%bx)  # Segment location of ISR
 
-    # Set up for keyboard interrupts
+    # Set up for keyboard interrupts, address 0x24 in memory
     mov $0x24, %bx  # Hardware interrupt no# x 4 (int 9)
-    movw $keyhandler, %gs:(%bx)
-    movw %ds, %gs:2(%bx)  # Segment location of ISR
+    movw $keyhandler, (%bx)
+    movw %ds, 2(%bx)  # Segment location of ISR
 
     sti
     # Done setting up the IVT
     # =============================================================
 
     # =============================================================
-    # Initialize the PIT to run at 60Hz on channel 0, using mode 2
+    # Initialize the PIT to run at 20Hz on channel 0, using mode 2
     # Also set to lowbyte/hibyte
     movb $0x34, %al
     outb %al, $0x43
@@ -58,11 +57,11 @@ _start:
 
     # =============================================================
     # Main game loop code
-    movb $0, %cl
+    movb $0, %cl  # Counter used for skipping frames for the ball 
 .game_loop:
-    # Handle main logic over here
     call move_players  # Handle player movement
 
+    # Skip every second frame (ball runs at 10fps rather than 20)
     andb $1, %cl
     jz .skip_frame
     call move_ball
@@ -70,7 +69,7 @@ _start:
     addb $1, %cl
 
     # Rendering code placed here
-    movw $0, %ax
+    xor %ax, %ax
     call clear_screen
 
     movb player1_xpos, %bl

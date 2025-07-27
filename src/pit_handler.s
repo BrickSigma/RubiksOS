@@ -9,9 +9,9 @@ tick_count: .word 0
 pit_handler:
     pusha
 
-    cli
+    # cli  # Previously used to allow atomic writes, but removed to save memory
     incw tick_count
-    sti
+    # sti
 
     mov $0x20, %al  # Send the EOI (End of Interrupt signal) for the master controller
     outb %al, $0x20
@@ -21,15 +21,15 @@ pit_handler:
 
 # Function used to delay code until the next frame
 wait_for_tick:
-    push %ax
+    # push %ax  # No need to push AX as it is reset in the next game loop
 
-    cli
+    # cli  # Previously used to allow atomic access to tick_count, but to save memory I've removed it
     movw tick_count, %ax
-    sti
+    # sti
 
 .wait_for_tick_loop:
     cmpw tick_count, %ax
     je .wait_for_tick_loop
 
-    pop %ax
+    # pop %ax
     ret

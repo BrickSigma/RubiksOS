@@ -11,7 +11,7 @@ LDFLAGS := -T linker.ld
 
 ASFLAGS := -I$(SRCDIR)
 
-BOOTBIN := chippyos.bin
+BOOTBIN := rubiksos.bin
 
 .PHONY: all clean run
 

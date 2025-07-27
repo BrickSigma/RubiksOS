@@ -43,7 +43,7 @@ clear_screen:
     pusha
 
     movw $2000, %cx  # Loop 80x25 cells
-    movw $0, %di  # Start of video memory
+    xor %di, %di  # Start of video memory
     rep stosw
 
     popa

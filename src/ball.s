@@ -6,7 +6,7 @@ Contains logic for handling the ball, like its position, drawing, and physics.
 
 ball_x: .byte 40
 ball_y: .byte 12
-ball_x_vel: .byte 1
+ball_x_vel: .byte 2
 ball_y_vel: .byte 1
 
 .equ ball_size, 2
@@ -30,18 +30,15 @@ handle_vector:
     jle .reverse_left_part
     cmpb %cl, %bl
     jge .reverse_right_part
-    jmp .handle_vector_cont
+    ret
 .reverse_left_part:
     movb $1, %bl
     jmp .reverse_vel
 .reverse_right_part:
     movb %cl, %bl
-    jmp .reverse_vel
 .reverse_vel:
-    movb $-1, %al
-    mulb %bh
-    movb %al, %bh
-.handle_vector_cont:
+    negb %bh
+
     ret
 
 # Handles ball movement and collision detection
@@ -51,7 +48,7 @@ move_ball:
     # Move the ball along the x-axis
     movb ball_x, %bl
     movb ball_x_vel, %bh
-    movb $78, %cl
+    movb $79, %cl
     call handle_vector
     movb %bl, ball_x
     movb %bh, ball_x_vel
@@ -63,9 +60,6 @@ move_ball:
     call handle_vector
     movb %bl, ball_y
     movb %bh, ball_y_vel
-
-    # Check if ball is colliding with player 1
-
 
     popa
     ret
@@ -79,22 +73,18 @@ draw_ball:
     decb %bl
     decb %bh
 
-    movb %bl, %dl  # Save the x position when looping
     movw $0x0fdb, %ax  # White on black, solid character
-    
-    movb $ball_size, %ch
-.ball_height_loop:
-    movb $ball_size, %cl
-.ball_width_loop:
-    call print_char_at  # Print the character
-    incb %bl
-    decb %cl
-    jnz .ball_width_loop
 
-    movb %dl, %bl
+    # Loop unrolling used for drawing the four parts of the ball
+    # to help save memory
+    call print_char_at
+    incb %bl
+    call print_char_at
+    decb %bl
     incb %bh
-    decb %ch
-    jnz .ball_height_loop
+    call print_char_at
+    incb %bl
+    call print_char_at
 
     popa
     ret

@@ -14,65 +14,64 @@ player2_ypos: .byte 10
 .equ player_speed, 1
 
 /*
+Handle player input function:
+used to reduce redundant code for input/player logic
+
+INPUTS:
+AL = Keyboard buffer value
+BL = Player y position
+DL = Test byte for moving player up (tested against the keyboard buffer)
+DH = Test byte for moving player down
+
+RETURNS:
+BL = Updated player y position
+*/
+handle_player:
+    testb %dl, %al  # Test if up key for player is down
+    jnz .player_up
+    testb %dh, %al  # Test if down key for player is down
+    jnz .player_down
+    ret
+
+.player_up:
+    decb %bl
+    cmpb $0, %bl
+    jge .move_player_done
+    xorb %bl, %bl  # If player goes beyond the screen, reset it's position
+    ret
+.player_down:
+    incb %bl
+    cmpb $20, %bl
+    jle .move_player_done
+    movb $20, %bl  # If player goes beyond the screen, reset it's position
+
+.move_player_done:
+    ret
+
+/*
 Player movement code:
 handles movement for both players in one function.
 */
 move_players:
-    pusha
+    # pusha  # No need to preserve the registers as they are overwritten immediately
 
     movb keybuffer, %al
-    movb player1_ypos, %bl
-    movb player2_ypos, %bh
 
     # Handle player 1 movement (W/S keys)
-    testb $0b00000100, %al  # Test if W key is down
-    jnz .player_1_up
-    testb $0b00001000, %al  # Test if S key is down
-    jnz .player_1_down
-    jmp .move_player_1_done
-
-.player_1_up:
-    decb %bl
-    cmpb $0, %bl
-    jge .move_player_1_done
-    movb $0, %bl  # If player 1 goes beyond the screen, reset it's position
-    jmp .move_player_1_done
-.player_1_down:
-    incb %bl
-    cmpb $20, %bl
-    jle .move_player_1_done
-    movb $20, %bl  # If player 1 goes beyond the screen, reset it's position
-    jmp .move_player_1_done
-
-.move_player_1_done:
+    movb player1_ypos, %bl
+    movb $0b00000100, %dl  # W key
+    movb $0b00001000, %dh  # S key
+    call handle_player
+    movb %bl, player1_ypos
 
     # Handle player 2 movement (up/down keys)
-    testb $0b00000001, %al  # Test if UP key is down
-    jnz .player_2_up
-    testb $0b00000010, %al  # Test if DOWN key is down
-    jnz .player_2_down
-    jmp .move_player_2_done
+    movb player2_ypos, %bl
+    movb $0b00000001, %dl  # UP key
+    movb $0b00000010, %dh  # Down key
+    call handle_player
+    movb %bl, player2_ypos
 
-.player_2_up:
-    decb %bh
-    cmpb $0, %bh
-    jge .move_player_2_done
-    movb $0, %bh  # If player 2 goes beyond the screen, reset it's position
-    jmp .move_player_2_done
-.player_2_down:
-    incb %bh
-    cmpb $20, %bh
-    jle .move_player_2_done
-    movb $20, %bh  # If player 2 goes beyond the screen, reset it's position
-    jmp .move_player_2_done
-
-.move_player_2_done:
-
-    # Save the new player positions
-    movb %bl, player1_ypos
-    movb %bh, player2_ypos
-
-    popa
+    # popa
     ret
 
 /*
