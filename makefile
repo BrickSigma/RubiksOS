@@ -11,7 +11,7 @@ LDFLAGS := -T linker.ld
 
 ASFLAGS := -I$(SRCDIR)
 
-BOOTBIN := rubiksos.bin
+BOOTBIN := steineros.bin
 
 .PHONY: all clean run
 
