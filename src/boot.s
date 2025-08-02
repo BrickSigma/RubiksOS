@@ -68,15 +68,17 @@ _start:
 .skip_frame:
     addb $1, %cl
 
+    call player_ball_collision
+
     # Rendering code placed here
     xor %ax, %ax
     call clear_screen
 
-    movb player1_xpos, %bl
+    movb $player1_xpos, %bl
     movb player1_ypos, %bh
     call draw_player
 
-    movb player2_xpos, %bl
+    movb $player2_xpos, %bl
     movb player2_ypos, %bh
     call draw_player
 

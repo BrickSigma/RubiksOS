@@ -3,10 +3,10 @@ Code related to player drawing
 */
 .code16
 
-player1_xpos: .byte 2
+.equ player1_xpos, 2
 player1_ypos: .byte 10
 
-player2_xpos: .byte 76
+.equ player2_xpos, 76
 player2_ypos: .byte 10
 
 .equ player_height, 5
@@ -72,6 +72,65 @@ move_players:
     movb %bl, player2_ypos
 
     # popa
+    ret
+
+/*
+Handles the y axis collision detection for the player and ball.
+Required to reduce memory size.
+
+INPUTS:
+AL = Velocity of ball if collision detected
+BH = Player y position
+*/
+player_ball_collision_y_axis:
+    # Check the y position of the ball and see if it's within the player
+    movb ball_y, %bl
+    incb %bl
+    cmpb %bh, %bl  # ball_y >= player_y
+    jb .player_ball_collision_y_axis_exit
+
+    # Check the other end of the player
+    subb $2, %bl
+    addb $player_height, %bh
+    cmp %bh, %bl
+    ja .player_ball_collision_y_axis_exit
+
+    # Handle the collision by flipping the ball's velocity
+    movb %al, ball_x_vel
+
+.player_ball_collision_y_axis_exit:
+    ret
+
+/*
+Player-ball collision function
+*/
+player_ball_collision:
+    # Check if the ball has passed player 1's x position first
+    movb ball_x, %bl
+    decb %bl
+    cmp $4, %bl
+    ja .no_collision1  # ball_x <= player_x
+
+    # Check y axis collision
+    movb $2, %al
+    movb player1_ypos, %bh
+    call player_ball_collision_y_axis
+
+.no_collision1:
+
+    # Check if the ball has passed player 2's position next
+    movb ball_x, %bl
+    incb %bl
+    cmp $76, %bl
+    jb .no_collision2  # ball_x >= player_x
+
+    # Check y axis collision
+    movb $-2, %al
+    movb player2_ypos, %bh
+    call player_ball_collision_y_axis
+
+.no_collision2:
+
     ret
 
 /*

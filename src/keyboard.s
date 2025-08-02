@@ -62,7 +62,7 @@ Main key buffer to hold the current state of keys
     +---+---+---+---+---+---+---+---+
 bit | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
     +---+---+---+---+---+---+---+---+
-key | - | - | p |sp | s | w |dn |up |
+key | - | - | - | - | s | w |dn |up |
     +---+---+---+---+---+---+---+---+
 */
 .global keybuffer
